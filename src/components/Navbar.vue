@@ -14,6 +14,7 @@ const navLinks = [
   { name: "Home", to: "/" },
   { name: "Trending", to: "/trending" },
   { name: "Latest", to: "/latest" },
+  { name: "My List", to: "/my-list" },
   { name: "Search", to: "/search" },
 ];
 

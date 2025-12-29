@@ -1,7 +1,8 @@
 <script setup>
-import { onMounted, watch } from "vue";
+import { onMounted, watch, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDramaDetail } from "../composables/useDrama";
+import { useWatchlist } from "../composables/useWatchlist";
 
 const props = defineProps({
   bookId: {
@@ -13,6 +14,20 @@ const props = defineProps({
 const route = useRoute();
 const router = useRouter();
 const { drama, loading, error, fetch } = useDramaDetail();
+const { isInList, toggleList } = useWatchlist();
+
+const inList = computed(() => drama.value && isInList(props.bookId));
+
+function handleToggleList() {
+  if (drama.value) {
+    toggleList({
+      bookId: drama.value.bookId,
+      judul: drama.value.judul,
+      cover: drama.value.cover,
+      total_episode: drama.value.total_episode,
+    });
+  }
+}
 
 onMounted(() => {
   fetch(props.bookId);
@@ -154,11 +169,17 @@ function goToWatch(episodeIndex) {
                 Watch Episode 1
               </button>
               <button
-                class="glass px-6 py-3 rounded-full text-white font-medium hover:bg-white/10 transition-all flex items-center gap-2"
+                @click="handleToggleList"
+                :class="[
+                  'px-6 py-3 rounded-full font-medium transition-all flex items-center gap-2',
+                  inList
+                    ? 'bg-pink-500 text-white'
+                    : 'glass text-white hover:bg-white/10',
+                ]"
               >
                 <svg
                   class="w-5 h-5"
-                  fill="none"
+                  :fill="inList ? 'currentColor' : 'none'"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -166,10 +187,10 @@ function goToWatch(episodeIndex) {
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M12 4v16m8-8H4"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                   />
                 </svg>
-                Add to List
+                {{ inList ? "In My List" : "Add to List" }}
               </button>
             </div>
           </div>

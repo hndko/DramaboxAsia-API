@@ -1,5 +1,7 @@
 <script setup>
+import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { useWatchlist } from "../composables/useWatchlist";
 
 const props = defineProps({
   drama: {
@@ -17,12 +19,20 @@ const props = defineProps({
 });
 
 const router = useRouter();
+const { isInList, toggleList } = useWatchlist();
+
+const inList = computed(() => isInList(props.drama.bookId));
 
 function goToDetail() {
   router.push({
     name: "Detail",
     params: { bookId: props.drama.bookId },
   });
+}
+
+function handleToggleList(event) {
+  event.stopPropagation();
+  toggleList(props.drama);
 }
 </script>
 
@@ -58,6 +68,31 @@ function goToDetail() {
           </div>
         </div>
 
+        <!-- Add to List Button (Heart) -->
+        <button
+          @click="handleToggleList"
+          class="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all z-10"
+          :class="
+            inList
+              ? 'bg-pink-500 text-white'
+              : 'bg-black/50 backdrop-blur text-white hover:bg-pink-500'
+          "
+        >
+          <svg
+            class="w-4 h-4"
+            :fill="inList ? 'currentColor' : 'none'"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+            />
+          </svg>
+        </button>
+
         <!-- Rank Badge -->
         <div
           v-if="showRank && drama.rank"
@@ -68,7 +103,7 @@ function goToDetail() {
 
         <!-- NEW Badge -->
         <div
-          v-if="showNewBadge"
+          v-if="showNewBadge && !drama.rank"
           class="absolute top-2 left-2 bg-pink-500 text-white text-xs font-bold px-2 py-0.5 rounded"
         >
           NEW

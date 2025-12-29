@@ -7,6 +7,7 @@ import Latest from "../pages/Latest.vue";
 import Search from "../pages/Search.vue";
 import Detail from "../pages/Detail.vue";
 import Watch from "../pages/Watch.vue";
+import MyList from "../pages/MyList.vue";
 
 const routes = [
   {
@@ -40,6 +41,11 @@ const routes = [
     name: "Watch",
     component: Watch,
     props: true,
+  },
+  {
+    path: "/my-list",
+    name: "MyList",
+    component: MyList,
   },
 ];
 
