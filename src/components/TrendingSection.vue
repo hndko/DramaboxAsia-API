@@ -55,7 +55,7 @@ onMounted(() => {
         </div>
         <router-link
           to="/trending"
-          class="text-pink-400 hover:text-pink-300 text-sm font-medium flex items-center gap-1 transition-colors"
+          class="text-pink-400 hover:text-pink-300 text-sm font-medium flex items-center gap-1 transition-colors cursor-pointer"
         >
           See All
           <svg
