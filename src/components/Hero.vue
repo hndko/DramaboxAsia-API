@@ -1,4 +1,18 @@
-<script setup></script>
+<script setup>
+import { ref, onMounted } from "vue";
+import { useTrending } from "../composables/useDrama";
+
+const { data: trendingDramas, fetch } = useTrending();
+const featuredDrama = ref(null);
+
+onMounted(async () => {
+  await fetch();
+  // Use first trending drama as featured
+  if (trendingDramas.value.length > 0) {
+    featuredDrama.value = trendingDramas.value[0];
+  }
+});
+</script>
 
 <template>
   <section class="pt-24 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -93,11 +107,24 @@
           style="animation-delay: 0.2s"
         >
           <div class="glass rounded-2xl p-4 card-hover">
-            <div class="relative aspect-[3/4] rounded-xl overflow-hidden">
+            <div class="relative aspect-3/4 rounded-xl overflow-hidden">
+              <!-- Featured Drama Cover -->
+              <template v-if="featuredDrama">
+                <img
+                  :src="featuredDrama.cover"
+                  :alt="featuredDrama.judul"
+                  class="absolute inset-0 w-full h-full object-cover"
+                />
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
+                ></div>
+              </template>
               <div
+                v-else
                 class="absolute inset-0 bg-gradient-to-br from-pink-600 via-purple-600 to-indigo-600 shimmer"
               ></div>
-              <!-- Placeholder Drama Poster -->
+
+              <!-- Content Overlay -->
               <div
                 class="absolute inset-0 flex flex-col items-center justify-center p-6"
               >
@@ -113,37 +140,21 @@
                   </svg>
                 </div>
                 <h3 class="text-white text-xl font-bold text-center">
-                  Queen of Tears
+                  {{ featuredDrama?.judul || "Loading..." }}
                 </h3>
                 <p class="text-white/70 text-sm mt-1">
-                  Episode 16 • Season Finale
+                  {{ featuredDrama?.total_episode || "" }}
                 </p>
                 <div class="flex items-center gap-2 mt-3">
                   <span
                     class="bg-pink-500 text-white text-xs px-2 py-1 rounded-full"
-                    >K-Drama</span
+                    >Trending</span
                   >
                   <span
                     class="bg-white/20 text-white text-xs px-2 py-1 rounded-full"
-                    >Romance</span
+                    >Drama</span
                   >
                 </div>
-              </div>
-            </div>
-
-            <!-- Mini Progress Bar -->
-            <div class="mt-3 px-2">
-              <div class="flex justify-between text-xs text-gray-400 mb-1">
-                <span>Episode 15</span>
-                <span>94%</span>
-              </div>
-              <div
-                class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden"
-              >
-                <div
-                  class="h-full bg-gradient-to-r from-pink-500 to-purple-500 rounded-full"
-                  style="width: 94%"
-                ></div>
               </div>
             </div>
           </div>
