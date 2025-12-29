@@ -10,9 +10,13 @@
  */
 
 // Use relative URL in development (proxied by Vite) or full URL in production
-const API_BASE_URL = import.meta.env.DEV
-  ? "/api"
-  : import.meta.env.VITE_API_BASE_URL || "https://dramabox-asia.vercel.app/api";
+const IS_DEV = import.meta.env.DEV;
+const API_BASE_URL = IS_DEV
+  ? ""
+  : (
+      import.meta.env.VITE_API_BASE_URL ||
+      "https://dramabox-asia.vercel.app/api"
+    ).replace(/\/api$/, "");
 
 // Cache configuration
 const cache = new Map();
@@ -61,7 +65,10 @@ async function fetchAPI(endpoint, params = {}, options = {}) {
   }
 
   // Build URL with query params
-  const url = new URL(endpoint, window.location.origin);
+  // In dev: use relative URL (proxied by Vite)
+  // In prod: use full API URL
+  const baseUrl = IS_DEV ? window.location.origin : API_BASE_URL;
+  const url = new URL(endpoint, baseUrl);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
       url.searchParams.append(key, value);
