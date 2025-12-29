@@ -97,7 +97,6 @@ src/
 # API Configuration
 VITE_API_BASE_URL=https://dramabox-asia.vercel.app/api
 VITE_APP_NAME=DramaBox Asia
-VITE_APP_URL=http://localhost:5173
 ```
 
 ---
