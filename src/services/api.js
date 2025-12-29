@@ -9,14 +9,8 @@
  * - Request deduplication
  */
 
-// Use relative URL in development (proxied by Vite) or full URL in production
-const IS_DEV = import.meta.env.DEV;
-const API_BASE_URL = IS_DEV
-  ? ""
-  : (
-      import.meta.env.VITE_API_BASE_URL ||
-      "https://dramabox-asia.vercel.app/api"
-    ).replace(/\/api$/, "");
+// Use relative URL - proxied by Vite in dev, Vercel rewrites in production
+const API_BASE_URL = "";
 
 // Cache configuration
 const cache = new Map();
@@ -64,11 +58,8 @@ async function fetchAPI(endpoint, params = {}, options = {}) {
     return pendingRequests.get(cacheKey);
   }
 
-  // Build URL with query params
-  // In dev: use relative URL (proxied by Vite)
-  // In prod: use full API URL
-  const baseUrl = IS_DEV ? window.location.origin : API_BASE_URL;
-  const url = new URL(endpoint, baseUrl);
+  // Build URL with query params (always use relative - proxied by Vite/Vercel)
+  const url = new URL(endpoint, window.location.origin);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
       url.searchParams.append(key, value);
