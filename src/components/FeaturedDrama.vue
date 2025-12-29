@@ -1,7 +1,9 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { useTrending } from "../composables/useDrama";
 
+const router = useRouter();
 const { data: trendingDramas, fetch } = useTrending();
 const featuredDrama = ref(null);
 
@@ -14,6 +16,24 @@ onMounted(async () => {
     featuredDrama.value = trendingDramas.value[0];
   }
 });
+
+function goToWatch() {
+  if (featuredDrama.value) {
+    router.push({
+      name: "Watch",
+      params: { bookId: featuredDrama.value.bookId, episode: 1 },
+    });
+  }
+}
+
+function goToDetail() {
+  if (featuredDrama.value) {
+    router.push({
+      name: "Detail",
+      params: { bookId: featuredDrama.value.bookId },
+    });
+  }
+}
 </script>
 
 <template>
@@ -23,7 +43,10 @@ onMounted(async () => {
       <div class="glass rounded-2xl overflow-hidden">
         <div class="grid lg:grid-cols-2 gap-0">
           <!-- Image Side -->
-          <div class="relative h-64 lg:h-auto min-h-[300px]">
+          <div
+            class="relative h-64 lg:h-auto min-h-[300px] cursor-pointer"
+            @click="goToDetail"
+          >
             <template v-if="featuredDrama">
               <img
                 :src="featuredDrama.cover"
@@ -36,24 +59,22 @@ onMounted(async () => {
             </template>
             <div
               v-else
-              class="absolute inset-0 bg-gradient-to-br from-rose-500 via-pink-600 to-purple-700"
+              class="absolute inset-0 bg-gradient-to-br from-rose-500 via-pink-600 to-purple-700 animate-pulse"
             ></div>
 
-            <!-- Decorative Elements -->
+            <!-- Play Button -->
             <div class="absolute inset-0 flex items-center justify-center">
-              <div class="text-center space-y-3">
-                <div
-                  class="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto cursor-pointer hover:scale-110 transition-transform pulse-glow"
+              <div
+                @click.stop="goToWatch"
+                class="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform pulse-glow"
+              >
+                <svg
+                  class="w-8 h-8 text-white ml-1"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    class="w-8 h-8 text-white ml-1"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-                <p class="text-white/80 text-sm">Watch Trailer</p>
+                  <path d="M8 5v14l11-7z" />
+                </svg>
               </div>
             </div>
 
@@ -94,9 +115,10 @@ onMounted(async () => {
                     Drama
                   </span>
                   <span
+                    v-if="featuredDrama.rank"
                     class="bg-purple-500/20 text-purple-300 text-xs font-medium px-3 py-1 rounded-full border border-purple-500/30"
                   >
-                    Trending #{{ featuredDrama.rank || 2 }}
+                    Trending #{{ featuredDrama.rank }}
                   </span>
                 </div>
 
@@ -105,35 +127,14 @@ onMounted(async () => {
                 </h2>
 
                 <p class="text-gray-400 text-sm leading-relaxed">
-                  Nikmati drama terbaik pilihan editor kami. Saksikan kisah yang
-                  penuh emosi dan tak terlupakan.
+                  {{ featuredDrama.total_episode }} • Enjoy this trending drama
+                  selected by our editors
                 </p>
-
-                <!-- Meta Info -->
-                <div class="flex flex-wrap items-center gap-4 text-sm">
-                  <div class="flex items-center gap-1.5 text-yellow-400">
-                    <svg
-                      class="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                      />
-                    </svg>
-                    <span class="font-bold">9.2</span>
-                  </div>
-                  <span class="text-gray-500">•</span>
-                  <span class="text-gray-400">2024</span>
-                  <span class="text-gray-500">•</span>
-                  <span class="text-gray-400">{{
-                    featuredDrama.total_episode
-                  }}</span>
-                </div>
 
                 <!-- Actions -->
                 <div class="flex flex-wrap gap-3 pt-2">
                   <button
+                    @click="goToWatch"
                     class="btn-primary px-6 py-2.5 rounded-full text-white font-semibold flex items-center gap-2"
                   >
                     <svg
@@ -146,6 +147,7 @@ onMounted(async () => {
                     Watch Now
                   </button>
                   <button
+                    @click="goToDetail"
                     class="glass px-6 py-2.5 rounded-full text-white font-medium hover:bg-white/10 transition-all flex items-center gap-2"
                   >
                     <svg
@@ -158,10 +160,10 @@ onMounted(async () => {
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         stroke-width="2"
-                        d="M12 4v16m8-8H4"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    Add to List
+                    Details
                   </button>
                 </div>
               </template>

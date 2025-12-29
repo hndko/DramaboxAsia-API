@@ -1,11 +1,26 @@
 <script setup>
-import { onMounted } from "vue";
-import { useHomeData } from "../composables/useDrama";
+import { onMounted, computed } from "vue";
+import { useTrending } from "../composables/useDrama";
+import DramaCard from "./DramaCard.vue";
 
-const { trending, loading, fetchData } = useHomeData();
+const props = defineProps({
+  limit: {
+    type: Number,
+    default: 0, // 0 = show all
+  },
+});
+
+const { data: trendingDramas, loading, fetch } = useTrending();
+
+const displayDramas = computed(() => {
+  if (props.limit > 0) {
+    return trendingDramas.value.slice(0, props.limit);
+  }
+  return trendingDramas.value;
+});
 
 onMounted(() => {
-  fetchData();
+  fetch();
 });
 </script>
 
@@ -38,8 +53,8 @@ onMounted(() => {
             <p class="text-gray-400 text-sm">Most watched this week</p>
           </div>
         </div>
-        <a
-          href="#"
+        <router-link
+          to="/trending"
           class="text-pink-400 hover:text-pink-300 text-sm font-medium flex items-center gap-1 transition-colors"
         >
           See All
@@ -56,7 +71,7 @@ onMounted(() => {
               d="M9 5l7 7-7 7"
             />
           </svg>
-        </a>
+        </router-link>
       </div>
 
       <!-- Loading State -->
@@ -64,10 +79,9 @@ onMounted(() => {
         v-if="loading"
         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
       >
-        <div v-for="n in 6" :key="n" class="animate-pulse">
+        <div v-for="n in limit || 6" :key="n" class="animate-pulse">
           <div class="aspect-2/3 rounded-xl bg-white/10"></div>
           <div class="mt-2 h-4 bg-white/10 rounded w-3/4"></div>
-          <div class="mt-1 h-3 bg-white/10 rounded w-1/2"></div>
         </div>
       </div>
 
@@ -76,68 +90,19 @@ onMounted(() => {
         v-else
         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
       >
-        <div
-          v-for="(drama, index) in trending"
+        <DramaCard
+          v-for="drama in displayDramas"
           :key="drama.bookId"
-          class="group cursor-pointer"
-        >
-          <div class="relative rounded-xl overflow-hidden card-hover">
-            <!-- Poster -->
-            <div class="aspect-2/3 relative">
-              <img
-                :src="drama.cover"
-                :alt="drama.judul"
-                class="absolute inset-0 w-full h-full object-cover"
-                loading="lazy"
-              />
-
-              <!-- Hover Overlay -->
-              <div
-                class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-              >
-                <div
-                  class="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center"
-                >
-                  <svg
-                    class="w-6 h-6 text-white ml-0.5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-              </div>
-
-              <!-- Rank Badge -->
-              <div
-                v-if="drama.rank"
-                class="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded"
-              >
-                #{{ drama.rank }}
-              </div>
-
-              <!-- Episode Count -->
-              <div
-                class="absolute bottom-2 left-2 bg-black/50 backdrop-blur text-white text-xs font-medium px-2 py-0.5 rounded-full"
-              >
-                {{ drama.total_episode }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Info -->
-          <div class="mt-2 px-1">
-            <h3
-              class="text-white font-semibold text-sm truncate group-hover:text-pink-400 transition-colors"
-            >
-              {{ drama.judul }}
-            </h3>
-          </div>
-        </div>
+          :drama="drama"
+          :show-rank="true"
+        />
       </div>
 
       <!-- Empty State -->
-      <div v-if="!loading && trending.length === 0" class="text-center py-12">
+      <div
+        v-if="!loading && trendingDramas.length === 0"
+        class="text-center py-12"
+      >
         <p class="text-gray-400">No trending dramas available</p>
       </div>
     </div>

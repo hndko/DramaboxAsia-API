@@ -1,7 +1,9 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { useSearch } from "../composables/useDrama";
 
+const router = useRouter();
 const isMenuOpen = ref(false);
 const showSearchResults = ref(false);
 
@@ -9,10 +11,10 @@ const { results, query, loading, totalResults, debouncedSearch, clearSearch } =
   useSearch();
 
 const navLinks = [
-  { name: "Home", href: "#" },
-  { name: "Trending", href: "#trending" },
-  { name: "Latest", href: "#latest" },
-  { name: "Search", href: "#search" },
+  { name: "Home", to: "/" },
+  { name: "Trending", to: "/trending" },
+  { name: "Latest", to: "/latest" },
+  { name: "Search", to: "/search" },
 ];
 
 function handleSearchInput(event) {
@@ -31,9 +33,15 @@ function handleClickOutside() {
   showSearchResults.value = false;
 }
 
-function closeSearch() {
+function goToSearch() {
+  showSearchResults.value = false;
+  router.push({ name: "Search", query: { q: query.value } });
+}
+
+function goToDetail(bookId) {
   showSearchResults.value = false;
   clearSearch();
+  router.push({ name: "Detail", params: { bookId } });
 }
 </script>
 
@@ -42,7 +50,7 @@ function closeSearch() {
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
-        <div class="flex items-center space-x-2">
+        <router-link to="/" class="flex items-center space-x-2">
           <div
             class="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center pulse-glow"
           >
@@ -59,18 +67,19 @@ function closeSearch() {
             class="text-xs text-pink-400 font-medium bg-pink-500/20 px-2 py-0.5 rounded-full"
             >ASIA</span
           >
-        </div>
+        </router-link>
 
         <!-- Desktop Navigation -->
         <div class="hidden md:flex items-center space-x-6">
-          <a
+          <router-link
             v-for="link in navLinks"
             :key="link.name"
-            :href="link.href"
+            :to="link.to"
             class="text-gray-300 hover:text-pink-400 transition-colors duration-300 text-sm font-medium"
+            active-class="text-pink-400"
           >
             {{ link.name }}
-          </a>
+          </router-link>
         </div>
 
         <!-- Search & Actions -->
@@ -82,6 +91,7 @@ function closeSearch() {
               :value="query"
               @input="handleSearchInput"
               @focus="handleSearchFocus"
+              @keydown.enter="goToSearch"
               class="bg-white/10 border border-white/20 rounded-full px-4 py-2 pl-10 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/30 w-48 transition-all duration-300 focus:w-64"
             />
             <svg
@@ -122,29 +132,27 @@ function closeSearch() {
             <!-- Search Results Dropdown -->
             <div
               v-if="showSearchResults && query.length > 0"
-              class="absolute top-full left-0 right-0 mt-2 glass rounded-xl overflow-hidden shadow-2xl max-h-96 overflow-y-auto w-80"
+              class="absolute top-full left-0 mt-2 glass rounded-xl overflow-hidden shadow-2xl max-h-96 overflow-y-auto w-80"
             >
               <div v-if="loading" class="p-4 text-center">
                 <p class="text-gray-400 text-sm">Searching...</p>
               </div>
 
               <div v-else-if="results.length === 0" class="p-4 text-center">
-                <p class="text-gray-400 text-sm">
-                  No results found for "{{ query }}"
-                </p>
+                <p class="text-gray-400 text-sm">No results found</p>
               </div>
 
               <div v-else>
                 <div class="p-2 border-b border-white/10">
                   <p class="text-gray-400 text-xs">
-                    {{ totalResults }} results found
+                    {{ totalResults }} results
                   </p>
                 </div>
                 <div
-                  v-for="drama in results.slice(0, 8)"
+                  v-for="drama in results.slice(0, 6)"
                   :key="drama.bookId"
                   class="flex items-center gap-3 p-3 hover:bg-white/10 cursor-pointer transition-colors"
-                  @click="closeSearch"
+                  @click="goToDetail(drama.bookId)"
                 >
                   <img
                     :src="drama.cover"
@@ -162,25 +170,19 @@ function closeSearch() {
                   </div>
                 </div>
                 <div
-                  v-if="results.length > 8"
+                  v-if="results.length > 6"
                   class="p-3 border-t border-white/10 text-center"
                 >
-                  <a
-                    href="#search"
+                  <button
+                    @click="goToSearch"
                     class="text-pink-400 text-sm hover:text-pink-300"
-                    @click="closeSearch"
                   >
                     View all {{ totalResults }} results
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-          <button
-            class="btn-primary px-4 py-2 rounded-full text-sm font-semibold text-white"
-          >
-            Sign In
-          </button>
         </div>
 
         <!-- Mobile Menu Button -->
@@ -222,29 +224,15 @@ function closeSearch() {
       <!-- Mobile Menu -->
       <div v-show="isMenuOpen" class="md:hidden pb-4">
         <div class="flex flex-col space-y-2">
-          <!-- Mobile Search -->
-          <div class="px-4 py-2">
-            <input
-              type="text"
-              placeholder="Search dramas..."
-              :value="query"
-              @input="handleSearchInput"
-              class="w-full bg-white/10 border border-white/20 rounded-full px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-pink-500"
-            />
-          </div>
-          <a
+          <router-link
             v-for="link in navLinks"
             :key="link.name"
-            :href="link.href"
+            :to="link.to"
             class="text-gray-300 hover:text-pink-400 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/5"
+            @click="isMenuOpen = false"
           >
             {{ link.name }}
-          </a>
-          <button
-            class="btn-primary mx-4 mt-2 px-4 py-2 rounded-full text-sm font-semibold text-white"
-          >
-            Sign In
-          </button>
+          </router-link>
         </div>
       </div>
     </div>

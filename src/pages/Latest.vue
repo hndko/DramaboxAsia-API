@@ -1,23 +1,9 @@
 <script setup>
-import { onMounted, computed } from "vue";
+import { onMounted } from "vue";
 import { useLatest } from "../composables/useDrama";
-import DramaCard from "./DramaCard.vue";
-
-const props = defineProps({
-  limit: {
-    type: Number,
-    default: 0, // 0 = show all
-  },
-});
+import DramaCard from "../components/DramaCard.vue";
 
 const { data: latestDramas, loading, hasMore, fetch, loadMore } = useLatest();
-
-const displayDramas = computed(() => {
-  if (props.limit > 0) {
-    return latestDramas.value.slice(0, props.limit);
-  }
-  return latestDramas.value;
-});
 
 onMounted(() => {
   fetch(true);
@@ -25,11 +11,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="py-12 px-4 sm:px-6 lg:px-8">
+  <div class="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
     <div class="max-w-6xl mx-auto">
-      <!-- Section Header -->
-      <div class="flex items-center justify-between mb-8">
-        <div class="flex items-center gap-3">
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
           <div
             class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center"
           >
@@ -48,60 +34,39 @@ onMounted(() => {
             </svg>
           </div>
           <div>
-            <h2 class="text-2xl font-bold text-white">Latest Updates</h2>
-            <p class="text-gray-400 text-sm">Fresh dramas just added</p>
+            <h1 class="text-3xl font-bold text-white">Latest Updates</h1>
+            <p class="text-gray-400">Fresh dramas just added</p>
           </div>
         </div>
-        <router-link
-          to="/latest"
-          class="text-pink-400 hover:text-pink-300 text-sm font-medium flex items-center gap-1 transition-colors"
-        >
-          See All
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </router-link>
       </div>
 
       <!-- Loading State -->
       <div
         v-if="loading && latestDramas.length === 0"
-        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
+        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
       >
-        <div v-for="n in limit || 12" :key="n" class="animate-pulse">
+        <div v-for="n in 15" :key="n" class="animate-pulse">
           <div class="aspect-2/3 rounded-xl bg-white/10"></div>
           <div class="mt-2 h-4 bg-white/10 rounded w-3/4"></div>
+          <div class="mt-1 h-3 bg-white/10 rounded w-1/2"></div>
         </div>
       </div>
 
       <!-- Latest Grid -->
       <div
         v-else
-        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
+        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
       >
         <DramaCard
-          v-for="drama in displayDramas"
+          v-for="drama in latestDramas"
           :key="drama.bookId"
           :drama="drama"
           :show-new-badge="true"
         />
       </div>
 
-      <!-- Load More (only on homepage) -->
-      <div
-        v-if="!limit && latestDramas.length > 0 && hasMore"
-        class="text-center mt-8"
-      >
+      <!-- Load More Button -->
+      <div v-if="latestDramas.length > 0 && hasMore" class="text-center mt-10">
         <button
           @click="loadMore"
           :disabled="loading"
@@ -134,10 +99,28 @@ onMounted(() => {
       <!-- Empty State -->
       <div
         v-if="!loading && latestDramas.length === 0"
-        class="text-center py-12"
+        class="text-center py-20"
       >
-        <p class="text-gray-400">No latest dramas available</p>
+        <div
+          class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <svg
+            class="w-10 h-10 text-gray-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+            />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-2">No Latest Dramas</h3>
+        <p class="text-gray-400">Check back later for new content</p>
       </div>
     </div>
-  </section>
+  </div>
 </template>
